@@ -134,17 +134,24 @@
             var customAttributes = (mInfo.IsSpecialName) ? MethodAttributes.SpecialName : MethodAttributes.Private;
             var methodBuilder = typeBuilder.DefineMethod(DefineName(mInfo), customAttributes | methodAttributes, mInfo.ReturnType, parameterTypes);
             var methodGenerator = methodBuilder.GetILGenerator();
-            var sourceMethod = sourceType.GetMethod(mInfo.Name, parameterTypes);
+            var sourceMethod = sourceType.GetMethod(mInfo.Name, CheckParameterTypes(parameterTypes, mInfo.DeclaringType));
             if(sourceMethod != null) {
-                methodGenerator.Emit(OpCodes.Ldarg_0);
+                methodGenerator.Emit(OpCodes.Ldarg_0); // @this
                 EmitLdargs(parameterTypes, methodGenerator);
                 methodGenerator.Emit(OpCodes.Call, sourceMethod);
-                if(sourceMethod.ReturnType != mInfo.ReturnType)
+                if(sourceMethod.ReturnType != CheckEnumType(mInfo.ReturnType, mInfo.DeclaringType))
                     methodGenerator.Emit(OpCodes.Castclass, mInfo.ReturnType);
             }
             else {
-                if(mInfo.ReturnType != typeof(void) && !mInfo.ReturnType.IsValueType)
-                    methodGenerator.Emit(OpCodes.Ldnull);
+                if(mInfo.ReturnType != typeof(void)) {
+                    if(!mInfo.ReturnType.IsValueType)
+                        methodGenerator.Emit(OpCodes.Ldnull);
+                    else {
+                        Action<ILGenerator> generate;
+                        if(defaultValuesGenerator.TryGetValue(CheckEnumType(mInfo.ReturnType), out generate))
+                            generate(methodGenerator);
+                    }
+                }
             }
             methodGenerator.Emit(OpCodes.Ret);
             return methodBuilder;
@@ -166,8 +173,25 @@
         static string DefineName(MemberInfo memberInfo) {
             return memberInfo.DeclaringType.FullName + "." + memberInfo.Name;
         }
+        static Type CheckEnumType(Type type) {
+            return type.IsEnum ? type.GetEnumUnderlyingType() : type;
+        }
+        static Type CheckEnumType(Type type, Type interfaceType) {
+            return (interfaceType.Assembly == type.Assembly) ? CheckEnumType(type) : type;
+        }
+        static IDictionary<Type, Action<ILGenerator>> defaultValuesGenerator = new Dictionary<Type, Action<ILGenerator>> { 
+            { typeof(int), (g) => g.Emit(OpCodes.Ldc_I4_0) },
+            { typeof(byte), (g) => g.Emit(OpCodes.Ldc_I4_0) },
+            { typeof(short), (g) => g.Emit(OpCodes.Ldc_I4_0) },
+            { typeof(long), (g) => g.Emit(OpCodes.Ldc_I8, (long)0) },
+            { typeof(float), (g) => g.Emit(OpCodes.Ldc_R4, 0f) },
+            { typeof(double), (g) => g.Emit(OpCodes.Ldc_R8, 0.0) },
+        };
         static Type[] GetParameterTypes(MethodBase method) {
             return method.GetParameters().Select(p => p.ParameterType).ToArray();
+        }
+        static Type[] CheckParameterTypes(Type[] parameterTypes, Type interfaceType) {
+            return parameterTypes.Select(t => CheckEnumType(t, interfaceType)).ToArray();
         }
         static OpCode[] args = new OpCode[] { OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3 };
         static void EmitLdargs(Array parameters, ILGenerator generator) {
@@ -219,8 +243,19 @@
         }
 #if DEBUGTEST
         internal static void Save() {
-            foreach(var item in aCache) item.Value.Save(item.Key + dynamicSuffix + ".dll");
+            foreach(var item in aCache)
+                item.Value.Save(item.Key + dynamicSuffix + ".dll");
         }
 #endif
+        internal static Func<System.Collections.IEnumerable, object> GetEnumerableCast(
+            ref Func<System.Collections.IEnumerable, object> enumerableCastConverter, Func<Type> getType) {
+            if(enumerableCastConverter == null) {
+                var castMethod = typeof(Enumerable).GetMethod("Cast").MakeGenericMethod(getType());
+                var source = Expression.Parameter(typeof(System.Collections.IEnumerable), "source");
+                enumerableCastConverter = Expression.Lambda<Func<System.Collections.IEnumerable, object>>(
+                    Expression.Call(castMethod, source), source).Compile();
+            }
+            return enumerableCastConverter;
+        }
     }
 }
