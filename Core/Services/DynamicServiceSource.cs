@@ -7,7 +7,7 @@
     using System.Reflection.Emit;
 
     public static class DynamicServiceSource {
-        static readonly object[] EmptyParameters = new object[] { };
+        public static readonly object[] EmptyParameters = new object[] { };
         public static T Create<T>(Type serviceType) {
             return CreateCore<T>(new Type[] { serviceType });
         }
