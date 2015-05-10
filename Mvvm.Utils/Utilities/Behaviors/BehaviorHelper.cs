@@ -12,19 +12,19 @@
         static object GetParentViewModel() {
             return null;
         }
-        //static IViewModelSource GetViewModelSource(MVVMContext context) {
-        //    return (context != null) ? context.GetViewModelSource() : GetViewModelSource();
-        //}
-        //static IMVVMInterfaces GetMVVMInterfaces(MVVMContext context) {
-        //    return (context != null) ? context.GetMVVMInterfaces() : GetMVVMInterfaces();
-        //}
-        //static object GetParentViewModel(MVVMContext context) {
-        //    return (context != null) ? context.ViewModel : GetParentViewModel();
-        //}
-        //public static IDisposable Attach<TBehavior>(this object source, MVVMContext context)
-        //    where TBehavior : BehaviorBase {
-        //    return (source != null) ? AttachCore<TBehavior>(source, GetParentViewModel(context), GetViewModelSource(context), GetMVVMInterfaces(context)) : null;
-        //}
+        static IMVVMViewModelSource GetViewModelSource(MVVMContext context) {
+            return (context != null) ? context.GetViewModelSource() : GetViewModelSource();
+        }
+        static IMVVMInterfaces GetMVVMInterfaces(MVVMContext context) {
+            return (context != null) ? context.GetMVVMInterfaces() : GetMVVMInterfaces();
+        }
+        static object GetParentViewModel(MVVMContext context) {
+            return (context != null) ? context.ViewModel : GetParentViewModel();
+        }
+        public static IDisposable Attach<TBehavior>(this object source, MVVMContext context)
+            where TBehavior : BehaviorBase {
+            return (source != null) ? AttachCore<TBehavior>(source, GetParentViewModel(context), GetViewModelSource(context), GetMVVMInterfaces(context)) : null;
+        }
         public static IDisposable Attach<TBehavior>(this object source)
             where TBehavior : BehaviorBase {
             return (source != null) ? AttachCore<TBehavior>(source, GetParentViewModel(), GetViewModelSource(), GetMVVMInterfaces()) : null;

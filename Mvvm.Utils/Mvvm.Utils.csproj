@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base\Helper.cs" />
+    <Compile Include="MVVMContext.cs" />
     <Compile Include="Tests\Bindings\BindingHelper.cs" />
     <Compile Include="Utilities\Behaviors\BehaviorBase.cs" />
     <Compile Include="Utilities\Behaviors\BehaviorHelper.cs" />
@@ -91,7 +92,9 @@
     <Compile Include="Utilities\MVVM\MVVMViewModelSource.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'DebugTest'">
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
