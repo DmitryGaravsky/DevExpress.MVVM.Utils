@@ -1,4 +1,4 @@
-﻿namespace POCO.Services {
+﻿namespace Mvvm.Utils.Services {
     using System;
     using System.Collections.Generic;
     using System.Linq;

@@ -1,7 +1,7 @@
 ﻿#if DEBUGTEST
-namespace POCO.Tests {
+namespace Mvvm.Utils.Tests {
     using NUnit.Framework;
-    using POCO.Services;
+    using Mvvm.Utils.Services;
 
     #region TestClasses
     public interface ITestService {
