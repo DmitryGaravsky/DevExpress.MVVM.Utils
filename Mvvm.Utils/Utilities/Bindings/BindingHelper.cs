@@ -238,8 +238,9 @@
                     ((TriggerAction)updateSource).ChangeTarget(source);
                 var triggerRef = sourceTriggerRef as TriggerRefCounterBase;
                 if(triggerRef != null) {
-                    if(triggerRef.Update(source))
-                        triggerRef.ExecuteActions(sourcePropertyName, updateTarget);
+					if(triggerRef.Update (source)){
+						triggerRef.ExecuteActions (sourcePropertyName, updateTarget);
+					}
                 }
             }
             void UpdateSourceCore() {
@@ -286,7 +287,7 @@
 #if DEBUGTEST
         internal
 #endif
- static IDisposable SetPCETriggerCore<TEventArgs, TValue>(object source, string eventName, Expression<Func<TEventArgs, TValue>> converterExpression, ITriggerAction action = null)
+ 		static IDisposable SetPCETriggerCore<TEventArgs, TValue>(object source, string eventName, Expression<Func<TEventArgs, TValue>> converterExpression, ITriggerAction action = null)
             where TEventArgs : EventArgs {
             return SetTriggerCore(source,
                 () => PropertyChangedEventTrigger<TEventArgs, TValue>.GetKey(eventName),
@@ -468,23 +469,22 @@
         }
         sealed class TriggerAction : ITriggerAction {
             WeakReference tRef;
-            Action<object, object> setValue;
             Type valueType;
-            Type targetType;
+			Action<object, object> setValue;
             ITriggerAction parentTriggerAction;
             public TriggerAction(object target, Type targetType, PropertyInfo member, ITriggerAction parentTriggerAction) {
                 this.tRef = new WeakReference(target);
                 this.parentTriggerAction = parentTriggerAction;
                 this.valueType = member.PropertyType;
-                this.targetType = targetType;
                 var setMethod = member.GetSetMethod();
                 if(setMethod != null) {
                     var t = Expression.Parameter(typeof(object), "t");
                     var value = Expression.Parameter(typeof(object), "value");
                     setValue = Expression.Lambda<Action<object, object>>(
-                                    Expression.Call(Expression.Convert(t, targetType), setMethod, Expression.Convert(value, valueType)), t, value
-                                ).Compile();
-                }
+                                    Expression.Call(
+										Expression.Convert(t, targetType), setMethod, Expression.Convert(value, valueType)
+								), t, value).Compile();
+				}
             }
             bool ITriggerAction.CanExecute(object value) {
                 if(parentTriggerAction != null && parentTriggerAction.IsExecuting)
