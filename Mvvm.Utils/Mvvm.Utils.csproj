@@ -51,6 +51,7 @@
     <Reference Include="nunit.framework">
       <Package>nunit</Package>
     </Reference>
+    <None Include="packages.config"/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base\Helper.cs" />
@@ -65,9 +66,7 @@
     <Compile Include="Utilities\MVVM\IMVVMInterfaces.cs" />
     <Compile Include="Utilities\MVVM\IMVVMViewModelSource.cs" />
     <Compile Include="Utilities\MVVM\MVVMViewModelSourceProxy.cs" />
-    <Compile Include="Utilities\MVVM\MVVMInterfaces.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Utilities\MVVM\MVVMInterfaces.cs"/>
     <Compile Include="Base\Assembly\AssemblyHelper.cs" />
     <Compile Include="Base\Assembly\AssemblyInfo.cs" />
     <Compile Include="Base\ExpressionHelper.cs" />
@@ -90,11 +89,6 @@
     <Compile Include="Tests\MVVM\MVVMViewModelSource.cs" />
     <Compile Include="Tests\Services\DynamicServiceSource.cs" />
     <Compile Include="Utilities\MVVM\MVVMViewModelSource.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' == 'DebugTest'">
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
